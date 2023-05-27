@@ -16,4 +16,4 @@ fig.update_traces(textposition="bottom right")
 st.plotly_chart(fig)
 
 
-sp500
+sp500  
