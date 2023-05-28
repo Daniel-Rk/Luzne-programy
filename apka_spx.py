@@ -70,17 +70,9 @@ def plot_seperate():
             x_range = np.linspace(x.min(), x.max(), len(x))
             y_range = reg.predict(x_range.reshape(-1, 1))
 
-            fig.add_trace(
-                go.Scatter(
-                    x=[df.index[0], y_range[0]],
-                    y=[df.index[-1], y_range[-1]],
+            df['Regres model'] = y_range
 
-                    mode="lines",
-                    line=go.scatter.Line(color="violet"),
-                    showlegend=True) )
-
-
-
+            fig = px.line(df, x=df.index, y=[j, 'Regres model'])
 
         st.plotly_chart(fig)
 
