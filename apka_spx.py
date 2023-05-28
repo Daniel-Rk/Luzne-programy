@@ -3,6 +3,8 @@ import pandas as pd
 import yfinance as yf
 import plotly.express as px
 from finance_core import *
+from sklearn.linear_model import LinearRegression
+import plotly.graph_objects as go
 
 sp500 = yf.Ticker("^SPX").history(period="5y")
 st.sidebar.title('Econometrics app')
@@ -13,7 +15,7 @@ st.sidebar.write(array)
 
 show_average = st.sidebar.checkbox('Show average')
 show_outlier = st.sidebar.checkbox('Show outliers')
-
+show_linear_regres = st.sidebar.checkbox('Show linear regres')
 # fig = px.line(sp500, x=sp500.index, y=["Low", "High"])
 fig = px.line(sp500, x=sp500.index, y="Close")
 fig.update_traces(textposition="bottom right")
@@ -57,6 +59,29 @@ def plot_seperate():
             fig.add_scatter(x=anomaly[ticker].index, y=anomaly[ticker].values,
                             marker=dict(size=8, color="red"), mode="markers")
             
+
+        if show_linear_regres is True:
+            x = np.arange(len(df[j].values)).reshape((-1,1))
+            y = np.array([df[j]]).reshape((-1,1))
+
+            reg = LinearRegression()
+            reg.fit(x, y)
+
+            x_range = np.linspace(x.min(), x.max(), len(x))
+            y_range = reg.predict(x_range.reshape(-1, 1))
+
+            fig.add_trace(
+                go.Scatter(
+                    x=[df.index[0], y_range[0]],
+                    y=[df.index[-1], y_range[-1]],
+
+                    mode="lines",
+                    line=go.scatter.Line(color="violet"),
+                    showlegend=True) )
+
+
+
+
         st.plotly_chart(fig)
 
 
