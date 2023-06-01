@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import yfinance as yf
 import plotly.express as px
-from finance_core import *
+from core import *
 from sklearn.linear_model import LinearRegression
 
 
