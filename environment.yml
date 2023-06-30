@@ -1,5 +1,6 @@
 name: stats
 dependencies:
+  - miniconda
   - openbb
   - yfinance
   - numpy
