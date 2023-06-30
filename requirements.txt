@@ -1,4 +1,4 @@
-miniconda
+anaconda
 openbb
 yfinance
 numpy
