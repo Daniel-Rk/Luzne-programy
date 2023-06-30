@@ -8,14 +8,14 @@ from sklearn.linear_model import LinearRegression
 from scipy import stats
 import plotly.express as px
 import streamlit as st
+import datetime
 
-
-def cagr(start_data, end_data, n):
-    """
-    Compound Annual Growth Rate (CAGR)
-    """
-    cagr_value = (end_data/start_data)**(1/n) - 1
-    return round(cagr_value*100, 2)
+# def cagr(start_data, end_data, n):
+#     """
+#     Compound Annual Growth Rate (CAGR)
+#     """
+#     cagr_value = (end_data/start_data)**(1/n) - 1
+#     return round(cagr_value*100, 2)
 
 
 class percent_project:
@@ -40,6 +40,18 @@ class percent_project:
             'y':self.comp_percent
         }
         return dict
+
+def cagr(end, begin, date):
+    n_to_read = datetime.datetime.strptime(date, '%Y-%m-%d').date()   
+    n_current = datetime.date.today()
+    n = int(n_current.year - n_to_read.year)
+    cagr = ((end/begin)**(1/n) - 1)*100
+    return cagr
+
+def stock_return(end, begin):
+    stock_return = (end/begin - 1)*100
+    return stock_return
+
 
 
 # _____________________________________________________________________< Data Frame 
@@ -95,7 +107,7 @@ class analysis:
             if regres == True:
                 slope, intercept, r, p, se = stats.linregress(x, y)
                 plt.plot(x, intercept + slope*x, 'r', label='fitted line')
-
+            
     def magnitude(self):
         for i,j in enumerate(self.index_array):
             self.dataframe[j] = self.dataframe[j]/self.dataframe[j][0]
