@@ -1,8 +1,10 @@
-openbb 
-yfinance
-numpy
-plotly
-streamlit
-pandas
-datetime
-sklearn
+name: stats
+dependencies:
+  - openbb
+  - yfinance
+  - numpy
+  - plotly
+  - streamlit
+  - pandas
+  - datetime
+  - sklearn
