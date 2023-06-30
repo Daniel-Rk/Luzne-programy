@@ -1,5 +1,6 @@
 openbb 
 yfinance
+openbb_terminal.sdk
 numpy
 plotly
 streamlit
