@@ -1,0 +1,8 @@
+openbb 
+yfinance
+numpy
+plotly
+streamlit
+pandas
+datetime
+sklearn
