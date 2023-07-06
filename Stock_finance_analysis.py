@@ -22,8 +22,6 @@ def convert_string_to_int(string):
     else:
         return int(string)
     
-
-
 def ln_regres(dataframe, value_to_regres):
     dataframe[dataframe.columns[0]] = pd.to_datetime(dataframe[dataframe.columns[0]], format='%Y-%m-%d')
     x = dataframe.index.values.reshape((-1, 1))
@@ -41,8 +39,6 @@ def plot(dataframe, lista, linear_regres=None):
         if linear_regres is True:
             fig.add_traces(go.Line( x=dataframe.fiscalDateEnding, y=ln_regres(dataframe, j) ))
         st.plotly_chart(fig)
-
-
 
 
 class Stock_Finance():

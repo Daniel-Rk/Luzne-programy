@@ -20,6 +20,7 @@ if page == 'Cena':
     kde = st.sidebar.checkbox('Show KDE')
     correlation = st.sidebar.checkbox('Show Correlation')
     table_info = st.sidebar.checkbox("Show summary table")
+    stock_to_benchmark = st.sidebar.checkbox("Show benchmark")
 
     # df = yahoo(array).cena()
     # st.dataframe(df)
@@ -27,7 +28,7 @@ if page == 'Cena':
 
     df.price(show_average = mean,
                 show_outlier = outlier, show_linear_regres = linear_regres,
-                show_quantile_regres=quantile_regres, show_kde = kde)
+                show_quantile_regres=quantile_regres, show_kde = kde, show_return_to_benchmark=stock_to_benchmark)
 
     if correlation is True:
         df.correlation()

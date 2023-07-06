@@ -77,17 +77,92 @@ def stock_return(end, begin):
     stock_return = (end/begin - 1)*100
     return stock_return
 
+def linear_regres(dataframe, j):
+    x = np.arange(len(dataframe[j].values)).reshape((-1,1))
+    y = np.array([dataframe[j]]).reshape((-1,1))
+    reg = LinearRegression()
+    reg.fit(x, y)
+    x_range = np.linspace(x.min(), x.max(), len(x))
+    y_range = reg.predict(x_range.reshape(-1, 1))
+    return y_range
+
+# def quantile_regres()
+#     st.plotly_chart(self.fig)
+    
+#     from sklearn.utils.fixes import parse_version, sp_version
+#     rng = np.random.RandomState(42)
+#     x = self.df[j].values
+#     X = x[:, np.newaxis]
+#     y_true_mean = 10 + 0.5 * x
+
+#     y_normal = y_true_mean + rng.normal(loc=0, scale=0.5 + 0.5 * x, size=x.shape[0])
+#     a = 5
+#     y_pareto = y_true_mean + 10 * (rng.pareto(a, size=x.shape[0]) - 1 / (a - 1))
+
+#     solver = "highs" if sp_version >= parse_version("1.6.0") else "interior-point"
+
+#     from sklearn.linear_model import QuantileRegressor
+
+#     quantiles = [0.2, 0.5, 0.8]
+#     predictions = {}
+#     out_bounds_predictions = np.zeros_like(y_true_mean, dtype=np.bool_)
+#     for quantile in quantiles:
+#         qr = QuantileRegressor(quantile=quantile, alpha=0, solver=solver)
+#         y_pred = qr.fit(X, y_normal).predict(X)
+#         predictions[quantile] = y_pred
+
+#         if quantile == min(quantiles):
+#             out_bounds_predictions = np.logical_or(
+#                 out_bounds_predictions, y_pred >= y_normal
+#             )
+#         elif quantile == max(quantiles):
+#             out_bounds_predictions = np.logical_or(
+#                 out_bounds_predictions, y_pred <= y_normal
+#             )
+
+#     for quantile, y_pred in predictions.items():   
+#         self.df[f'Quantile: {quantile}'] = y_pred
+#     self.df['X'] = X
+#     # st.dataframe(self.df)
+#     # import plotly.graph_objects as go
+#     # self.fig = go.Figure()
+#     # self.fig.add_trace( go.Line(x=self.df.index, y=self.df['Quantile: 0.2'] ))
+#     # self.fig.add_trace( go.Line(x=self.df.index, y=self.df['Quantile: 0.5'] ))
+#     # self.fig.add_trace( go.Line(x=self.df.index, y=self.df['Quantile: 0.8'] ))
+#     #self.fig.add_trace( go.Line(x=self.df.index, y=self.df['X'] ))
+#     self.fig = px.line(self.df, x='X', y=['Quantile: 0.2', 'Quantile: 0.5', 'Quantile: 0.8'])
+
+
+def outliers(dataframe, j):
+    ticker = j
+    X = dataframe[ticker]
+    X.index = range(0, len(X.index))
+    X_train = X.reset_index().T.reset_index().T.values.tolist()
+    X_train.pop(0)
+    model=IsolationForest(n_estimators=50, max_samples='auto', contamination=float(0.1),max_features=1.0)
+    model.fit(dataframe[[ticker]])
+    dataframe['scores']=model.decision_function(dataframe[[ticker]])
+    dataframe['anomaly']=model.predict(dataframe[[ticker]])
+    anomaly=dataframe.loc[dataframe['anomaly']==-1]
+    fig = px.line(dataframe, x=dataframe.index, y=j).add_scatter(x=anomaly[ticker].index, y=anomaly[ticker].values,
+                    marker=dict(size=8, color="red"), mode="markers")
+    return fig
+
+
+
+
+
 
 
 class Stock_Price():
     def __init__(self, stock_array = ['PZU.WA'], stock_date = '2020-01-05'):
         self.stock_array = stock_array
         self.stock_date = stock_date
-        self.df = yahoo(self.stock_array).cena(start_= self.stock_date)    
+        self.df = yahoo(self.stock_array).cena(start_= self.stock_date).dropna()
 
 
     def price(self, show_average = None,
-                show_outlier = None, show_linear_regres=None, show_quantile_regres=None, show_kde=None):
+                show_outlier = None, show_linear_regres=None, show_quantile_regres=None, show_kde=None, show_return_to_benchmark=None):
         
         self.df.describe()
         df_1 = analysis(self.df).magnitude()
@@ -103,73 +178,44 @@ class Stock_Price():
                 self.fig.add_hline(mean(self.df[j]))
 
             if show_outlier is True:
-                ticker = j
-                X = self.df[ticker]
-                X.index = range(0, len(X.index))
-                X_train = X.reset_index().T.reset_index().T.values.tolist()
-                X_train.pop(0)
-                model=IsolationForest(n_estimators=50, max_samples='auto', contamination=float(0.1),max_features=1.0)
-                model.fit(self.df[[ticker]])
-                self.df['scores']=model.decision_function(self.df[[ticker]])
-                self.df['anomaly']=model.predict(self.df[[ticker]])
-                anomaly=self.df.loc[self.df['anomaly']==-1]
-                self.fig = px.line(self.df, x=self.df.index, y=j).add_scatter(x=anomaly[ticker].index, y=anomaly[ticker].values,
-                                marker=dict(size=8, color="red"), mode="markers")
+                self.fig = outliers(self.df, j)
 
             if show_linear_regres is True:
-                x = np.arange(len(self.df[j].values)).reshape((-1,1))
-                y = np.array([self.df[j]]).reshape((-1,1))
-                reg = LinearRegression()
-                reg.fit(x, y)
-                x_range = np.linspace(x.min(), x.max(), len(x))
-                y_range = reg.predict(x_range.reshape(-1, 1))
-                self.df['Regres model'] = y_range
+                self.df['Regres model'] = linear_regres(self.df, j)
                 self.fig = px.line(self.df, x=self.df.index, y=[j, 'Regres model'])
-
-
 
             if show_kde is True:
                     self.fig = px.histogram(self.df, x=j)
 
             if show_quantile_regres is True:
-                st.plotly_chart(self.fig)
+                pass
+
+            if show_return_to_benchmark is True:
+                pass
+                # df = self.df.copy().reset_index(drop=True)
+                # df = df.set_index([self.df.columns[0]])
+
+                # X = df.index.values.reshape(-1,1)
+                # y = df[df.columns[i]]
+                # st.write(X)
+
+                #st.write(y)
+
+
                 
-                from sklearn.utils.fixes import parse_version, sp_version
-                rng = np.random.RandomState(42)
-                x = self.df[j].values
-                X = x[:, np.newaxis]
-                y_true_mean = 10 + 0.5 * x
+                # reg = LinearRegression()
+                # reg.fit(X, y)
+                # y_range = reg.predict(X.reshape(-1, 1))
+                # st.write(X)
+                # st.write(y_range)
 
-                y_normal = y_true_mean + rng.normal(loc=0, scale=0.5 + 0.5 * x, size=x.shape[0])
-                a = 5
-                y_pareto = y_true_mean + 10 * (rng.pareto(a, size=x.shape[0]) - 1 / (a - 1))
+                # import plotly.graph_objects as go
+                # self.fig = go.Figure()
 
-                solver = "highs" if sp_version >= parse_version("1.6.0") else "interior-point"
+                # self.fig.add_trace( go.Scatter(x=self.df[self.df.columns[0]], y=self.df['KO'], mode='markers' ))
+                # #self.fig.add_trace( go.Line(x=X, y=y_range ))
 
-                from sklearn.linear_model import QuantileRegressor
 
-                quantiles = [0.2, 0.5, 0.8]
-                predictions = {}
-                out_bounds_predictions = np.zeros_like(y_true_mean, dtype=np.bool_)
-                for quantile in quantiles:
-                    qr = QuantileRegressor(quantile=quantile, alpha=0, solver=solver)
-                    y_pred = qr.fit(X, y_normal).predict(X)
-                    predictions[quantile] = y_pred
-
-                    if quantile == min(quantiles):
-                        out_bounds_predictions = np.logical_or(
-                            out_bounds_predictions, y_pred >= y_normal
-                        )
-                    elif quantile == max(quantiles):
-                        out_bounds_predictions = np.logical_or(
-                            out_bounds_predictions, y_pred <= y_normal
-                        )
-
-                for quantile, y_pred in predictions.items():   
-                    self.df[f'Quantile: {quantile}'] = y_pred
-                    #st.dataframe(self.df)
-                self.df['X'] = X
-                self.fig = px.line(self.df, x='X', y=['Quantile: 0.2', 'Quantile: 0.5', 'Quantile: 0.8'])
 
 
 
